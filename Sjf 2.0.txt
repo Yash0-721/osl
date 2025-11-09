@@ -1,0 +1,116 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 100
+
+int at[MAX], bt[MAX], n;
+
+void inputProcesses() {
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++) {
+        printf("Enter Arrival Time and Burst Time for Process %d: ", i + 1);
+        scanf("%d %d", &at[i], &bt[i]);
+    }
+}
+
+void sjf_np() {
+    int wt[MAX], tat[MAX], done[MAX] = {0}, time = 0, completed = 0;
+    printf("\nSJF Non-Preemptive Scheduling:\n");
+    printf("PID\tAT\tBT\tWT\tTAT\n");
+    while (completed < n) {
+        int idx = -1, min_bt = 9999;
+        for (int i = 0; i < n; i++) {
+            if (!done[i] && at[i] <= time && bt[i] < min_bt) {
+                min_bt = bt[i];
+                idx = i;
+            }
+        }
+        if (idx != -1) {
+            wt[idx] = time - at[idx];
+            if (wt[idx] < 0) wt[idx] = 0;
+            tat[idx] = wt[idx] + bt[idx];
+            time += bt[idx];
+            done[idx] = 1;
+            completed++;
+            printf("P%d\t%d\t%d\t%d\t%d\n", idx + 1, at[idx], bt[idx], wt[idx], tat[idx]);
+        } else time++;
+    }
+}
+
+void sjf_p() {
+    int rt[MAX], wt[MAX], tat[MAX], completed = 0, time = 0;
+    for (int i = 0; i < n; i++) rt[i] = bt[i];
+    printf("\nSJF Preemptive (SRTF) Scheduling:\n");
+    printf("PID\tAT\tBT\tWT\tTAT\n");
+    while (completed < n) {
+        int idx = -1, min_bt = 9999;
+        for (int i = 0; i < n; i++) {
+            if (at[i] <= time && rt[i] > 0 && rt[i] < min_bt) {
+                min_bt = rt[i];
+                idx = i;
+            }
+        }
+        if (idx != -1) {
+            rt[idx]--;
+            time++;
+            if (rt[idx] == 0) {
+                completed++;
+                int finish = time;
+                wt[idx] = finish - at[idx] - bt[idx];
+                if (wt[idx] < 0) wt[idx] = 0;
+                tat[idx] = wt[idx] + bt[idx];
+                printf("P%d\t%d\t%d\t%d\t%d\n", idx + 1, at[idx], bt[idx], wt[idx], tat[idx]);
+            }
+        } else time++;
+    }
+}
+
+int main() {
+    int choice;
+    do {
+        printf("\nCPU Scheduling - SJF Algorithms\n");
+        printf("1. SJF Non-Preemptive\n2. SJF Preemptive (SRTF)\n0. Exit\nEnter choice: ");
+        scanf("%d", &choice);
+        switch (choice) {
+            case 1:
+                inputProcesses();
+                sjf_np();
+                break;
+            case 2:
+                inputProcesses();
+                sjf_p();
+                break;
+            case 0:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice!\n");
+        }
+    } while (choice != 0);
+    return 0;
+}
+
+/*
+------------------------------------
+To compile:
+gcc sjf.c -o sjf
+
+To run:
+./sjf
+
+Example Input:
+1
+Enter number of processes: 3
+Enter Arrival Time and Burst Time for Process 1: 0 5
+Enter Arrival Time and Burst Time for Process 2: 1 3
+Enter Arrival Time and Burst Time for Process 3: 2 2
+
+Example Output:
+SJF Non-Preemptive Scheduling:
+PID	AT	BT	WT	TAT
+P1	0	5	0	5
+P3	2	2	3	5
+P2	1	3	5	8
+------------------------------------
+*/
