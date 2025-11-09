@@ -85,3 +85,5 @@ int main() {
     printf("\nTotal Page Faults = %d\n", pageFaults);
     return 0;
 }
+
+//gcc filename.c -o lru ./lru
